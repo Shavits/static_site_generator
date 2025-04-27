@@ -4,4 +4,5 @@ def main():
     node = TextNode("hello world", TextType.LINK, "https://www.boot.dev")
     print(node)
 
-main()
+if __name__ == "__main__":
+    main()
