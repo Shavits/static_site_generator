@@ -32,15 +32,36 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 def extract_markdown_images(text):
     
     matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    #print(f"extracted images: {matches}")
     return matches
-
 
 
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    #print(f"extracted links: {matches}")
     return matches
 
+def split_nodes_image(old_nodes):
+    res = []
+    for old_node in old_nodes:
+        if old_node.text_type == TextType.TEXT:
+            res.extend(__split_node_image(old_node))
+        else:
+            res.append(old_node)
+    return res
+
+def split_nodes_link(old_nodes):
+    res = []
+    for old_node in old_nodes:
+        if old_node.text_type == TextType.TEXT:
+            res.extend(__split_node_link(old_node))
+        else:
+            res.append(old_node)
+    return res
+
 def __split_node(old_node, delimiter, text_type):
+    if(old_node.text == ""):
+        return []
     split_text = old_node.text.split(delimiter)
     #print(split_text)
     if len(split_text) ==1:
@@ -55,5 +76,39 @@ def __split_node(old_node, delimiter, text_type):
             res.append(TextNode(split_text[i], text_type))
     return res
 
+def __split_node_image(old_node):
+    if(old_node.text == ""):
+        return []
+    res = []
+    matches = extract_markdown_images(old_node.text)
+    cur_text = old_node.text
+    if len(matches) == 0:
+        return [old_node]
+    for match in matches:
+        split_text = cur_text.split(f"![{match[0]}]({match[1]})", 1)
+        if(len(split_text) >=2):
+            res.append(TextNode(split_text[0], TextType.TEXT))
+        res.append(TextNode(match[0], TextType.IMAGE, match[1]))
+        cur_text = split_text[-1]
+    return res
+
+
+
+def __split_node_link(old_node):
+    if(old_node.text == ""):
+        return []
+    res = []
+    matches = extract_markdown_links(old_node.text)
+    cur_text = old_node.text
+    if len(matches) == 0:
+        return [old_node]
+    for match in matches:
+        split_text = cur_text.split(f"[{match[0]}]({match[1]})", 1)
+        if(len(split_text) >=2):
+            res.append(TextNode(split_text[0], TextType.TEXT))
+        res.append(TextNode(match[0], TextType.LINK, match[1]))
+        cur_text = split_text[-1]
+    return res
+    
 
     

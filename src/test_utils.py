@@ -91,7 +91,7 @@ class TestUtils(unittest.TestCase):
     def test_split_nodes_delimiter_empty(self):
         node = TextNode("", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-        self.assertEqual(new_nodes, [node])
+        self.assertEqual(new_nodes, [])
 
     def test_split_nodes_delimiter_no_delimiter(self):
         node = TextNode("This is text with no delimiter", TextType.TEXT)
@@ -149,6 +149,73 @@ class TestUtils(unittest.TestCase):
         "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and ![another image](https://i.imgur.com/zjjcJKZ.png)"
         )
         self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png"), ("another image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_split_nodes_image(self):
+        node = TextNode("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png")
+        ])
+    def test_split_nodes_image_no_image(self):
+        node = TextNode("This is text with no image", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [node]) 
+
+    def test_split_nodes_image_multiple(self):
+        node = TextNode("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and ![another image](https://i.imgur.com/zjjcJKZ.png)", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("another image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png")
+        ])
+
+    def test_split_nodes_image_other_types_in_input(self):
+        node = TextNode("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)", TextType.TEXT)
+        node2 = TextNode("This is a bold text", TextType.BOLD)
+        new_nodes = split_nodes_image([node, node2])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            node2
+        ])
+    def test_split_nodes_link(self):
+        node = TextNode("This is text with a [link](https://www.google.com)", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://www.google.com")
+        ])
+    def test_split_nodes_link_no_link(self):
+        node = TextNode("This is text with no link", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [node]) 
+    def test_split_nodes_link_multiple(self):
+        node = TextNode("This is text with a [link](https://www.google.com) and [another link](https://www.boot.dev)", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://www.google.com"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("another link", TextType.LINK, "https://www.boot.dev")
+        ])
+
+    def test_split_nodes_link_other_types_in_input(self):
+        node = TextNode("This is text with a [link](https://www.google.com)", TextType.TEXT)
+        node2 = TextNode("This is a bold text", TextType.BOLD)
+        new_nodes = split_nodes_link([node, node2])
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://www.google.com"),
+            node2
+        ])
+    def test_split_nodes_link_empty(self):
+        node = TextNode("", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [])
+
 
 
         
