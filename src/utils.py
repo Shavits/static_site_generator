@@ -19,6 +19,18 @@ def text_node_to_html_node(node):
         case _:
             raise Exception("Invalid type")
         
+    
+def text_to_textnodes(text):
+    if text == "":
+        return []
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+    
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     res = []
@@ -90,6 +102,8 @@ def __split_node_image(old_node):
             res.append(TextNode(split_text[0], TextType.TEXT))
         res.append(TextNode(match[0], TextType.IMAGE, match[1]))
         cur_text = split_text[-1]
+    if cur_text != "":
+        res.append(TextNode(cur_text, TextType.TEXT))
     return res
 
 
@@ -108,6 +122,8 @@ def __split_node_link(old_node):
             res.append(TextNode(split_text[0], TextType.TEXT))
         res.append(TextNode(match[0], TextType.LINK, match[1]))
         cur_text = split_text[-1]
+    if cur_text != "":
+        res.append(TextNode(cur_text, TextType.TEXT))
     return res
     
 
