@@ -315,7 +315,7 @@ This is the same paragraph on a new line
         block_type = block_to_block_type(block)
         self.assertEqual(block_type, BlockType.CODE)
     def test_block_to_block_type_quote(self):
-        block = ">This is a quote\n>with multiple lines"
+        block = "> This is a quote\n> with multiple lines"
         block_type = block_to_block_type(block)
         self.assertEqual(block_type, BlockType.QUOTE)
     def test_block_to_block_type_unordered_list(self):

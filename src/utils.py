@@ -1,4 +1,5 @@
 from textnode import TextNode, TextType
+from src.parentnode import ParentNode
 from src.blocknode import BlockType
 from leafnode import LeafNode
 import re
@@ -20,6 +21,8 @@ def text_node_to_html_node(node):
         case _:
             raise Exception("Invalid type")
         
+
+
     
 def text_to_textnodes(text):
     if text == "":
@@ -150,8 +153,6 @@ def block_to_block_type(block):
 def __check_heading(block):
     return block.startswith("# ") or block.startswith("## ") or block.startswith("### ") or block.startswith("#### ") or block.startswith("##### ") or block.startswith("###### ")
         
-
-
 def __check_code(block):
     return block.startswith("```") and block.endswith("```")
 
@@ -159,11 +160,11 @@ def __check_quote(block):
     lines = block.split("\n")
     res = True
     for line in lines:
-        if not line.startswith('>'):
+        if not line.startswith('> '):
             res = False
     return res
 
-def __check_unordered_list(block):
+def __check_unordered_list(block): 
     lines = block.split("\n")
     res = True
     for line in lines:
@@ -182,4 +183,48 @@ def __check_ordered_list(block):
     return res
         
     
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        block_type = block_to_block_type(block)
+
+
+def __block_to_html_node(block, block_type):
+    tag = ""
+    children = []
+    match block_type:
+        case BlockType.HEADING:
+            tag =f"h{__count_heading_hashes(block)}"
+            children = __heading_to_html_children(block)
+        case BlockType.UNORDERED_LIST:
+            tag = "ul"
+        case BlockType.ORDERED_LIST:
+            tag = "ol"
+        case BlockType.CODE:
+            tag = "code"
+        case BlockType.QUOTE:
+            tag = "blockquote"
+        case BlockType.PARAGRAPH:
+            tag = "p"
+
+    return ParentNode(tag, children)
+        
+
+def __heading_to_html_children(block):
+    stripped = block.strip("# ")
+    text_nodes= text_to_textnodes(stripped)
+    return list(map(text_node_to_html_node, text_nodes))
+
+def __unordered_list_to_html_children(block):
+    items = block.split("> ")
     
+
+
+def __count_heading_hashes(text):
+    count = 0
+    for char in text:
+        if char == '#':
+            count += 1
+        else:
+            break
+    return count
