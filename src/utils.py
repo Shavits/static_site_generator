@@ -1,4 +1,5 @@
 from textnode import TextNode, TextType
+from src.blocknode import BlockType
 from leafnode import LeafNode
 import re
 
@@ -130,5 +131,55 @@ def markdown_to_blocks(markdown):
     stripped_blockes = list(map(lambda block: block.strip(), fileterd_blocks))
     return stripped_blockes
 
+def block_to_block_type(block):
+    if __check_heading(block):
+        return BlockType.HEADING
+    elif __check_code(block):
+        return BlockType.CODE
+    elif __check_quote(block):
+        return BlockType.QUOTE
+    elif __check_unordered_list(block):
+        return BlockType.UNORDERED_LIST
+    elif __check_ordered_list(block):
+        return BlockType.ORDERED_LIST
+    else:
+        return BlockType.PARAGRAPH
+
+
+
+def __check_heading(block):
+    return block.startswith("# ") or block.startswith("## ") or block.startswith("### ") or block.startswith("#### ") or block.startswith("##### ") or block.startswith("###### ")
+        
+
+
+def __check_code(block):
+    return block.startswith("```") and block.endswith("```")
+
+def __check_quote(block):
+    lines = block.split("\n")
+    res = True
+    for line in lines:
+        if not line.startswith('>'):
+            res = False
+    return res
+
+def __check_unordered_list(block):
+    lines = block.split("\n")
+    res = True
+    for line in lines:
+        if not line.startswith("- "):
+            res = False
+    return res
+
+def __check_ordered_list(block):
+    lines = block.split("\n")
+    res = True
+    last_num = 0
+    for line in lines:
+        if not line.startswith(f"{last_num+1}. "):
+            res = False
+        last_num+=1
+    return res
+        
     
     

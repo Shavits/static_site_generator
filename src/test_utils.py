@@ -1,9 +1,20 @@
 from htmlnode import HTMLNode
 from leafnode import LeafNode
 from parentnode import ParentNode
-from src.utils import markdown_to_blocks
+from src.blocknode import BlockType
+from src.utils import (
+    text_node_to_html_node,
+    text_to_textnodes,
+    split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
+    extract_markdown_links,
+    extract_markdown_images,
+    markdown_to_blocks,
+    block_to_block_type
+
+)
 from textnode import TextNode, TextType
-from utils import *
 import unittest
 
 class TestUtils(unittest.TestCase):
@@ -270,6 +281,58 @@ This is the same paragraph on a new line
         self.assertEqual(blocks, ["This is a single line","this is another line", "this is the last line"])
 
 
+    def test_block_to_block_type(self):
+        block = "This is a block\nit containess multiple lines\nand some text"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_heading1(self):
+        block = "# This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_heading2(self):
+        block = "## This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_heading3(self):    
+        block = "### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_heading4(self):
+        block = "#### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_heading5(self):
+        block = "##### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_heading6(self):
+        block = "###### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+    def test_block_to_block_type_code(self):
+        block = "```python\nprint('Hello, world!')\n```"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.CODE)
+    def test_block_to_block_type_quote(self):
+        block = ">This is a quote\n>with multiple lines"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.QUOTE)
+    def test_block_to_block_type_unordered_list(self):
+        block = "- This is an unordered list\n- with multiple items"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.UNORDERED_LIST)
+    def test_block_to_block_type_ordered_list(self):
+        block = "1. This is an ordered list\n2. with multiple items"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.ORDERED_LIST)
+
+    def test_block_to_block_type_invalid_ordered_list(self):
+        block = "1. This is an ordered list\n3. with multiple items\n5. with multiple items"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.PARAGRAPH)
+
+    
 
 
         
