@@ -31,7 +31,6 @@ def text_to_textnodes(text):
     nodes = split_nodes_link(nodes)
     return nodes
     
-
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     res = []
     for old_node in old_nodes:
@@ -41,12 +40,29 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             res.append(old_node)
     return res
 
+def __split_node(old_node, delimiter, text_type):
+    if(old_node.text == ""):
+        return []
+    split_text = old_node.text.split(delimiter)
+    #print(split_text)
+    if len(split_text) ==1:
+        return [old_node]
+    if len(split_text) % 2 == 0:
+        raise Exception("Invalid no closing delimiter")
+    res = []
+    for i in range(len(split_text)):
+        if i%2 == 0:
+            res.append(TextNode(split_text[i], TextType.TEXT))
+        else:
+            res.append(TextNode(split_text[i], text_type))
+    return res
+
+
 def extract_markdown_images(text):
     
     matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     #print(f"extracted images: {matches}")
     return matches
-
 
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
@@ -71,23 +87,6 @@ def split_nodes_link(old_nodes):
             res.append(old_node)
     return res
 
-def __split_node(old_node, delimiter, text_type):
-    if(old_node.text == ""):
-        return []
-    split_text = old_node.text.split(delimiter)
-    #print(split_text)
-    if len(split_text) ==1:
-        return [old_node]
-    if len(split_text) % 2 == 0:
-        raise Exception("Invalid no closing delimiter")
-    res = []
-    for i in range(len(split_text)):
-        if i%2 == 0:
-            res.append(TextNode(split_text[i], TextType.TEXT))
-        else:
-            res.append(TextNode(split_text[i], text_type))
-    return res
-
 def __split_node_image(old_node):
     if(old_node.text == ""):
         return []
@@ -105,8 +104,6 @@ def __split_node_image(old_node):
     if cur_text != "":
         res.append(TextNode(cur_text, TextType.TEXT))
     return res
-
-
 
 def __split_node_link(old_node):
     if(old_node.text == ""):
@@ -127,4 +124,11 @@ def __split_node_link(old_node):
     return res
     
 
+def markdown_to_blocks(markdown):
+    split_blocks = markdown.split("\n\n")
+    fileterd_blocks = list(filter(lambda block: block != "", split_blocks))
+    stripped_blockes = list(map(lambda block: block.strip(), fileterd_blocks))
+    return stripped_blockes
+
+    
     
