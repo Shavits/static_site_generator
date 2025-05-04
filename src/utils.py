@@ -188,6 +188,7 @@ def markdown_to_html_node(markdown):
     for block in blocks:
         block_type = block_to_block_type(block)
 
+    #res = ParentNode("div", )
 
 def __block_to_html_node(block, block_type):
     tag = ""
@@ -216,7 +217,23 @@ def __heading_to_html_children(block):
     return list(map(text_node_to_html_node, text_nodes))
 
 def __unordered_list_to_html_children(block):
-    items = block.split("> ")
+    lines = block.split("\n")
+    children = []
+    for line in lines:
+        stripped = line.strip("- ")
+        text_nodes= text_to_textnodes(stripped)
+        children.append(ParentNode("li", (list(map(text_node_to_html_node, text_nodes)))))
+    return children
+def __ordered_list_to_html_children(block):
+    lines = block.split("\n")
+    children = []
+    for line in lines:
+        stripped = line.strip("\d ")
+        text_nodes= text_to_textnodes(stripped)
+        children.append(ParentNode("li", (list(map(text_node_to_html_node, text_nodes)))))
+    return children
+    
+
     
 
 
