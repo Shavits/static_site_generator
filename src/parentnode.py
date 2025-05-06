@@ -12,15 +12,12 @@ class ParentNode(HTMLNode):
             raise ValueError("No Tag Provided")
         if not self.children:
             raise ValueError("No Children Provided")
-        return self.to_html_helper(self)
+        children_html = ""
+        for child in self.children:
+            children_html += child.to_html()
+        return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"
 
-    def to_html_helper(self, node):
-        res = ""
-        if not node.children:
-            res = LeafNode(node.tag, node.value, node.props).to_html()
-        else:
-            for child in node.children:
-                res += f"<{node.tag}{node.props_to_html()}>{self.to_html_helper(child)}</{node.tag}>"
-        return res
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
         
             

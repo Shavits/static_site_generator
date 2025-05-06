@@ -2,6 +2,7 @@ from textnode import TextNode, TextType
 from src.parentnode import ParentNode
 from src.blocknode import BlockType
 from leafnode import LeafNode
+from string import digits
 import re
 
 def text_node_to_html_node(node):
@@ -129,10 +130,14 @@ def __split_node_link(old_node):
     
 
 def markdown_to_blocks(markdown):
-    split_blocks = markdown.split("\n\n")
-    fileterd_blocks = list(filter(lambda block: block != "", split_blocks))
-    stripped_blockes = list(map(lambda block: block.strip(), fileterd_blocks))
-    return stripped_blockes
+    blocks = markdown.split("\n\n")
+    filtered_blocks = []
+    for block in blocks:
+        if block == "":
+            continue
+        block = block.strip()
+        filtered_blocks.append(block)
+    return filtered_blocks
 
 def block_to_block_type(block):
     if __check_heading(block):
@@ -151,7 +156,7 @@ def block_to_block_type(block):
 
 
 def __check_heading(block):
-    return block.startswith("# ") or block.startswith("## ") or block.startswith("### ") or block.startswith("#### ") or block.startswith("##### ") or block.startswith("###### ")
+    return block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### "))
         
 def __check_code(block):
     return block.startswith("```") and block.endswith("```")
@@ -185,10 +190,13 @@ def __check_ordered_list(block):
     
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
+    children = []
     for block in blocks:
         block_type = block_to_block_type(block)
+        children.append(__block_to_html_node(block, block_type))
+    
 
-    #res = ParentNode("div", )
+    return ParentNode("div", children)
 
 def __block_to_html_node(block, block_type):
     tag = ""
@@ -199,14 +207,22 @@ def __block_to_html_node(block, block_type):
             children = __heading_to_html_children(block)
         case BlockType.UNORDERED_LIST:
             tag = "ul"
+            children = __unordered_list_to_html_children(block)
         case BlockType.ORDERED_LIST:
             tag = "ol"
+            children = __ordered_list_to_html_children(block)
         case BlockType.CODE:
-            tag = "code"
+            tag = "pre"
+            children = [LeafNode("code", block[3:-3].lstrip("\n"))]
         case BlockType.QUOTE:
             tag = "blockquote"
+            children = __blockquote_to_html_children(block)
         case BlockType.PARAGRAPH:
             tag = "p"
+            lines = block.split("\n")
+            paragraph = " ".join(lines)
+            text_nodes = text_to_textnodes(paragraph)
+            children = list(map(text_node_to_html_node, text_nodes))
 
     return ParentNode(tag, children)
         
@@ -220,7 +236,7 @@ def __unordered_list_to_html_children(block):
     lines = block.split("\n")
     children = []
     for line in lines:
-        stripped = line.strip("- ")
+        stripped = line[2:]
         text_nodes= text_to_textnodes(stripped)
         children.append(ParentNode("li", (list(map(text_node_to_html_node, text_nodes)))))
     return children
@@ -228,10 +244,22 @@ def __ordered_list_to_html_children(block):
     lines = block.split("\n")
     children = []
     for line in lines:
-        stripped = line.strip("\d ")
+        stripped = line.lstrip(digits + ". ")
         text_nodes= text_to_textnodes(stripped)
         children.append(ParentNode("li", (list(map(text_node_to_html_node, text_nodes)))))
     return children
+
+def __blockquote_to_html_children(block):
+        lines = block.split("\n")
+        new_lines = []
+        for line in lines:
+            if not line.startswith(">"):
+                raise ValueError("invalid quote block")
+            new_lines.append(line.lstrip(">").strip())
+        content = " ".join(new_lines)
+        text_nodes= text_to_textnodes(content)
+        children = ((list(map(text_node_to_html_node, text_nodes))))
+        return children
     
 
     
