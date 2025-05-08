@@ -1,6 +1,6 @@
 from textnode import TextNode, TextType
-from src.parentnode import ParentNode
-from src.blocknode import BlockType
+from parentnode import ParentNode
+from blocknode import BlockType
 from leafnode import LeafNode
 from string import digits
 import re
@@ -26,8 +26,6 @@ def text_node_to_html_node(node):
 
     
 def text_to_textnodes(text):
-    if text == "":
-        return []
     nodes = [TextNode(text, TextType.TEXT)]
     nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
     nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
