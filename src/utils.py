@@ -163,7 +163,7 @@ def __check_quote(block):
     lines = block.split("\n")
     res = True
     for line in lines:
-        if not line.startswith('> '):
+        if not line.startswith('>'):
             res = False
     return res
 
